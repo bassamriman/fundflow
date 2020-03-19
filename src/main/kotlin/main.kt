@@ -1,28 +1,58 @@
-import arrow.core.Try
 import common.*
 import fundflow.Fund
 import fundflow.FundHierarchy
 import fundflow.FundRef
 import fundflow.FundRelation
 import fundflow.ledgers.*
-import ledger.HierarchicalTree
-import ledger.HierarchicalTreeApi
+import graph.HierarchicalTree
+import graph.HierarchicalTreeApi
 import ledger.LedgerContextAPI
 import ledger.TransactionCoordinates
 import java.time.LocalDateTime
 
 fun main(args: Array<String>) {
 
-    val income = Fund("Income", "income")
+    val income = Fund(
+        name = "Income",
+        description = "income",
+        reference = FundRef("Income")
+    )
 
-    val tfsa = Fund("TFSAFund", "This is the TFSAFund")
+    val tfsa = Fund(
+        name = "TFSAFund",
+        description = "This is the TFSA Fund",
+        reference = FundRef("TFSAFund")
+    )
 
-    val savingTangerine = Fund("SavingTangerineFund", "This is the SavingTangerineFund")
-    val checkingTangerine = Fund("CheckingTangerineFund", "This is the CheckingTangerineFund")
+    val savingTangerine = Fund(
+        name = "SavingTangerineFund",
+        description = "This is the SavingTangerineFund",
+        reference = FundRef("SavingTangerineFund")
+    )
+    val checkingTangerine =
+        Fund(
+            name = "CheckingTangerineFund",
+            description = "This is the CheckingTangerineFund",
+            reference = FundRef("CheckingTangerineFund")
+        )
 
-    val house = Fund("HouseFund", "This is a house fund")
-    val car = Fund("CarFund", "This is a Car fund")
-    val travel = Fund("TravelFund", "This is a Travel fund")
+    val house = Fund(
+        name = "HouseFund",
+        description = "This is a house fund",
+        reference = FundRef("HouseFund")
+    )
+
+    val car = Fund(
+        name = "CarFund",
+        description = "This is a Car fund",
+        reference = FundRef("CarFund")
+    )
+
+    val travel = Fund(
+        name = "TravelFund",
+        description = "This is a Travel fund",
+        reference = FundRef("TravelFund")
+    )
 
     val relations = listOf(
         FundRelation(tfsa.reference, savingTangerine.reference),
@@ -30,57 +60,62 @@ fun main(args: Array<String>) {
         FundRelation(checkingTangerine.reference, house.reference)
     )
 
-    val fundHierarchy: Try<HierarchicalTree<FundRef>> = HierarchicalTreeApi.run {
-        FundHierarchy.empty<FundRef>() + relations
-    }
+    val fundHierarchy: ValueWithError<HierarchicalTree<FundRef>> =
+        HierarchicalTreeApi.run {
+            FundHierarchy.empty<FundRef>() + relations
+        }
 
     val dateTimeInterval = DateTimeInterval(LocalDateTime.now(), LocalDateTime.now().plusDays(100))
 
     val carLeasePayment =
         RecurrentTransaction(
-            RecurrentTransactionQuantification(Amount(200.bd, BiWeekly)),
-            RecurrentTransactionDetail(dateTimeInterval),
-            TransactionCoordinates(income.reference, car.reference)
+            quantification = RecurrentTransactionQuantification(Amount(200.bd, BiWeekly)),
+            details = RecurrentTransactionDetail(dateTimeInterval),
+            transactionCoordinates = TransactionCoordinates(income.reference, car.reference)
         )
     val rentPayment =
         RecurrentTransaction(
-            RecurrentTransactionQuantification(Amount(1200.bd, Monthly)),
-            RecurrentTransactionDetail(dateTimeInterval),
-            TransactionCoordinates(income.reference, house.reference)
+            quantification = RecurrentTransactionQuantification(Amount(1200.bd, Monthly)),
+            details = RecurrentTransactionDetail(dateTimeInterval),
+            transactionCoordinates = TransactionCoordinates(income.reference, house.reference)
         )
 
     val travelPayment =
         RecurrentTransaction(
-            RecurrentTransactionQuantification(Amount(100.bd, BiWeekly)),
-            RecurrentTransactionDetail(dateTimeInterval),
-            TransactionCoordinates(income.reference, travel.reference)
+            quantification = RecurrentTransactionQuantification(Amount(100.bd, BiWeekly)),
+            details = RecurrentTransactionDetail(dateTimeInterval),
+            transactionCoordinates = TransactionCoordinates(income.reference, travel.reference)
         )
 
-    val result = fundHierarchy.map {
-        val recurrentTransactionLedgerContext =
-            RecurrentTransactionLedgerContext(
-                listOf(
-                    income,
-                    tfsa,
-                    savingTangerine,
-                    checkingTangerine,
-                    house,
-                    car,
-                    travel
-                ), it, listOf(carLeasePayment, rentPayment, travelPayment)
-            )
+    val recurrentTransactionLedgerContext =
+        RecurrentTransactionLedgerContext(
+            funds = listOf(
+                income,
+                tfsa,
+                savingTangerine,
+                checkingTangerine,
+                house,
+                car,
+                travel
+            ),
+            fundHierarchy = fundHierarchy.v,
+            recurrentTransactions = listOf(carLeasePayment, rentPayment, travelPayment)
+        )
 
-        val recurrentBalanceTransactionLedgerContext = RecurrentTransactionLedgerContextAPI.run {
+    val recurrentBalanceTransactionLedgerContext =
+        RecurrentTransactionLedgerContextAPI.run {
             recurrentTransactionLedgerContext.rollOutBalanceTransactionsIn(dateTimeInterval)
         }
-        RecurrentTransactionLedgerContextAPI.run { recurrentTransactionLedgerContext.viewAll() } to LedgerContextAPI.run {
-            recurrentBalanceTransactionLedgerContext.viewAll(
-                RecurrentBalanceTransactionFundViewFactory
-            )
-        }
+    val rt =
+        RecurrentTransactionLedgerContextAPI.run { recurrentTransactionLedgerContext.viewAll() }
+
+    val rbt = LedgerContextAPI.run {
+        recurrentBalanceTransactionLedgerContext.viewAll(
+            fundView = RecurrentBalanceTransactionFundViewFactory
+        )
     }
 
-    println("a")
+    println("$rbt")
 
 /*
     val fundHierarchy: FundHierarchy = HierarchicalTree.empty()

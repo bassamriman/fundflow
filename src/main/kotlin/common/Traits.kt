@@ -13,7 +13,7 @@ interface Describable {
 }
 
 interface Identifiable {
-    val id: UUID
+    val id: String
 }
 
 interface Temporal {

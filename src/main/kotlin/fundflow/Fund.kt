@@ -3,27 +3,17 @@ package fundflow
 import common.Describable
 import common.Identifiable
 import common.Nameable
-import fundflow.ledgers.BalanceTransactionLedgerFundSummaries
-import fundflow.ledgers.RecurrentTransactionLedgerFundSummaries
-import ledger.HierarchicalElement
-import ledger.HierarchicalTree
-import ledger.ParentChild
-import ledger.SingleFundLedgerSummary
+import graph.HierarchicalElement
+import graph.HierarchicalTree
+import graph.ParentChild
 import java.util.*
 
-data class FundRef(override val id: UUID) :
-    Identifiable {
-    companion object {
-        fun invoke(
-            id: UUID = UUID.randomUUID()
-        ): FundRef = FundRef(id)
-    }
-}
+data class FundRef(override val id: String = UUID.randomUUID().toString()) : Identifiable
 
 data class Fund(
     override val name: String,
     override val description: String,
-    val reference: FundRef = FundRef(UUID.randomUUID())
+    val reference: FundRef = FundRef()
 ) : Describable,
     Nameable
 

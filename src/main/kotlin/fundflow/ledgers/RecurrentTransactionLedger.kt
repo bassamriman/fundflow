@@ -1,13 +1,15 @@
 package fundflow.ledgers
 
 import arrow.core.Option
-import arrow.core.Try
 import arrow.core.getOrElse
 import arrow.data.getOption
 import arrow.data.k
 import arrow.syntax.collections.flatten
 import common.*
+import common.ValueWithError.Companion.toValue
+import common.ValueWithError.Companion.withErrors
 import fundflow.*
+import graph.HierarchicalTreeApi
 import ledger.*
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -158,9 +160,10 @@ object RecurrentTransactionLedgerContextAPI {
 
     fun RecurrentTransactionLedgerContext.addFundRelation(
         relation: FundRelation
-    ): Try<RecurrentTransactionLedgerContext> =
-        HierarchicalTreeApi.run { fundHierarchy + relation }.map { newFundHierarchy ->
-            val newFundSummaries: Map<FundRef, RecurrentTransactionLedgerFundSummaries> =
+    ): ValueWithError<RecurrentTransactionLedgerContext> {
+        val newFundHierarchy = HierarchicalTreeApi.run { fundHierarchy + relation }
+        val newFundSummaries: Map<FundRef, RecurrentTransactionLedgerFundSummaries> =
+            if (newFundHierarchy.e.isNotEmpty()) {
                 this.fundSummaries.map { entry ->
                     LedgerApi.run {
                         recurrentTransactionLedger.ledgerOf(entry.key)
@@ -168,16 +171,20 @@ object RecurrentTransactionLedgerContextAPI {
                         entry.key to entry.value.copy(summaryWithHierarchy = SingleFundLedgerAPI.run {
                             singleFundLedger.summary(
                                 RecurrentTransactionQuantificationOps,
-                                newFundHierarchy
+                                newFundHierarchy.v
                             )
                         })
                     }
                 }.flatten().toMap()
-            this.copy(
-                fundHierarchy = newFundHierarchy,
-                fundSummaries = newFundSummaries
-            )
-        }
+            } else {
+                this.fundSummaries
+            }
+
+        return this.copy(
+            fundHierarchy = newFundHierarchy.v,
+            fundSummaries = newFundSummaries
+        ).toValue().withErrors(newFundHierarchy.e)
+    }
 
     fun RecurrentTransactionLedgerContext.removeFundRelation(
         parent: FundRef,

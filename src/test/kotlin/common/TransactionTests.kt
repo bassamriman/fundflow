@@ -4,10 +4,10 @@ import arrow.core.None
 import arrow.core.Some
 import fundflow.FundRef
 import fundflow.ledgers.BalanceTransactionOps
+import graph.HierarchicalElementAPI
 import io.kotlintest.properties.Gen
 import io.kotlintest.properties.forAll
 import io.kotlintest.specs.StringSpec
-import ledger.HierarchicalElement
 import ledger.Sign
 import ledger.Transaction
 import ledger.TransactionApi
@@ -161,7 +161,11 @@ class TransactionTests : StringSpec({
         forAll(PositiveTestTransactionGen()) { transaction ->
             TransactionApi.run {
                 val maybeSign =
-                    transaction.sign(HierarchicalElement(transaction.transactionCoordinates.source, emptyList()))
+                    transaction.sign(
+                        HierarchicalElementAPI.run {
+                            empty(transaction.transactionCoordinates.source)
+                        }
+                    )
                 maybeSign == Some(Sign.NEGATIVE)
             }
         }
@@ -171,7 +175,11 @@ class TransactionTests : StringSpec({
         forAll(PositiveTestTransactionGen()) { transaction ->
             TransactionApi.run {
                 val maybeSign =
-                    transaction.sign(HierarchicalElement(transaction.transactionCoordinates.destination, emptyList()))
+                    transaction.sign(
+                        HierarchicalElementAPI.run {
+                            empty(transaction.transactionCoordinates.destination)
+                        }
+                    )
                 maybeSign == Some(Sign.POSITIVE)
             }
         }
@@ -182,7 +190,11 @@ class TransactionTests : StringSpec({
         forAll(PositiveTestTransactionGen(), FundRefGen()) { transaction, fund ->
             TransactionApi.run {
                 val maybeSign =
-                    transaction.sign(HierarchicalElement(fund, emptyList()))
+                    transaction.sign(
+                        HierarchicalElementAPI.run {
+                            empty(fund)
+                        }
+                    )
                 maybeSign == None
             }
         }

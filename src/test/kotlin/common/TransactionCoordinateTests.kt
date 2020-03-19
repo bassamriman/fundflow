@@ -3,10 +3,10 @@ package common
 import arrow.core.None
 import arrow.core.Some
 import fundflow.FundRef
+import graph.HierarchicalElementAPI
 import io.kotlintest.properties.Gen
 import io.kotlintest.properties.forAll
 import io.kotlintest.specs.StringSpec
-import ledger.HierarchicalElement
 import ledger.Position
 import ledger.TransactionCoordinates
 import ledger.TransactionCoordinatesAPI
@@ -16,7 +16,7 @@ import java.util.*
 class FundRefGen : Gen<FundRef> {
     override fun constants(): Iterable<FundRef> = emptyList()
     override fun random(): Sequence<FundRef> = generateSequence {
-        FundRef(UUID.randomUUID())
+        FundRef(UUID.randomUUID().toString())
     }
 }
 
@@ -40,10 +40,9 @@ class TransactionCoordinateTests : StringSpec({
         { transactionCoordinate: TestTransactionCoordinates, fund1: FundRef, fund2: FundRef ->
             TransactionCoordinatesAPI.run {
                 transactionCoordinate.position(
-                    HierarchicalElement(
-                        fund1,
-                        listOf(fund2)
-                    )
+                    HierarchicalElementAPI.run {
+                        empty(fund1).addChild(fund2)
+                    }
                 ) == None
             }
         }
@@ -55,7 +54,11 @@ class TransactionCoordinateTests : StringSpec({
         )
         { transactionCoordinate: TestTransactionCoordinates ->
             TransactionCoordinatesAPI.run {
-                transactionCoordinate.position(HierarchicalElement(transactionCoordinate.source, listOf())) == Some(
+                transactionCoordinate.position(
+                    HierarchicalElementAPI.run {
+                        empty(transactionCoordinate.source)
+                    }
+                ) == Some(
                     Position.SOURCE
                 )
             }
@@ -69,10 +72,9 @@ class TransactionCoordinateTests : StringSpec({
         { transactionCoordinate: TestTransactionCoordinates ->
             TransactionCoordinatesAPI.run {
                 transactionCoordinate.position(
-                    HierarchicalElement(
-                        transactionCoordinate.destination,
-                        listOf()
-                    )
+                    HierarchicalElementAPI.run {
+                        empty(transactionCoordinate.destination)
+                    }
                 ) == Some(
                     Position.DESTINATION
                 )
@@ -88,10 +90,9 @@ class TransactionCoordinateTests : StringSpec({
         { transactionCoordinate: TestTransactionCoordinates, fund: FundRef ->
             TransactionCoordinatesAPI.run {
                 transactionCoordinate.position(
-                    HierarchicalElement(
-                        fund,
-                        listOf(transactionCoordinate.source)
-                    )
+                    HierarchicalElementAPI.run {
+                        empty(fund).addChild(transactionCoordinate.source)
+                    }
                 ) == Some(
                     Position.SOURCE
                 )
@@ -107,10 +108,9 @@ class TransactionCoordinateTests : StringSpec({
         { transactionCoordinate: TestTransactionCoordinates, fund: FundRef ->
             TransactionCoordinatesAPI.run {
                 transactionCoordinate.position(
-                    HierarchicalElement(
-                        fund,
-                        listOf(transactionCoordinate.destination)
-                    )
+                    HierarchicalElementAPI.run {
+                        empty(fund).addChild(transactionCoordinate.destination)
+                    }
                 ) == Some(
                     Position.DESTINATION
                 )

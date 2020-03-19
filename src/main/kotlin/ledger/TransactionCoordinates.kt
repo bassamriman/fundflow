@@ -5,6 +5,8 @@ import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
 import arrow.typeclasses.Functor
+import graph.HierarchicalElement
+import graph.HierarchicalElementAPI
 
 enum class Position {
     SOURCE, DESTINATION
@@ -21,8 +23,8 @@ object TransactionCoordinatesAPI : Functor<ForTransactionCoordinates> {
         val transactionCoordinates = this
         HierarchicalElementAPI.run {
             return when {
-                fund equals transactionCoordinates.source -> Some(Position.SOURCE)
-                fund equals transactionCoordinates.destination -> Some(
+                fund equalsOrChild transactionCoordinates.source -> Some(Position.SOURCE)
+                fund equalsOrChild transactionCoordinates.destination -> Some(
                     Position.DESTINATION
                 )
                 else -> None

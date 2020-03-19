@@ -2,13 +2,17 @@ package common
 
 import java.util.*
 
-data class Version<out E, out A>(val element: E, val action: A, override val id: UUID = UUID.randomUUID()) :
+data class Version<out E, out A>(
+    val element: E,
+    val action: A,
+    override val id: String = UUID.randomUUID().toString()
+) :
     Identifiable
 
 data class Versioning<out E, out A>(
     val currentVersionIndex: Int,
     val versions: List<Version<E, A>>,
-    override val id: UUID = UUID.randomUUID()
+    override val id: String = UUID.randomUUID().toString()
 ) : Identifiable
 
 object VersioningAPI {

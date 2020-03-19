@@ -2,6 +2,8 @@ package ledger
 
 import arrow.core.Option
 import arrow.typeclasses.Monoid
+import graph.HierarchicalElement
+import graph.HierarchicalElementAPI
 
 enum class Sign {
     POSITIVE, NEGATIVE

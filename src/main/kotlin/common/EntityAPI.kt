@@ -6,7 +6,7 @@ import java.util.*
 import kotlin.reflect.KClass
 
 interface Entity : Identifiable
-data class EntityRef<E : Entity>(override val id: UUID) : Identifiable
+data class EntityRef<E : Entity>(override val id: String) : Identifiable
 /*
 
 interface EntityService {

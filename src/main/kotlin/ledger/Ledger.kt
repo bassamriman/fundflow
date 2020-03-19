@@ -4,7 +4,12 @@ import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
 import arrow.core.getOrElse
+import arrow.data.runId
 import arrow.syntax.collections.flatten
+import graph.HierarchicalElement
+import graph.HierarchicalElementAPI
+import graph.HierarchicalTree
+import graph.HierarchicalTreeApi
 
 /**
  * Ledger that holds a record of transactions
@@ -29,8 +34,8 @@ object LedgerApi {
         this.ledgerOf(fund) { f, flowCoordinates ->
             TransactionCoordinatesAPI.run {
                 HierarchicalTreeApi.run {
-                    flowCoordinates.source.childOrEqual(f, hierarchicalTree)
-                            || flowCoordinates.destination.childOrEqual(f, hierarchicalTree)
+                    flowCoordinates.source.isDescendantOrEqual(f).runId(hierarchicalTree)
+                            || flowCoordinates.destination.isDescendantOrEqual(f).runId(hierarchicalTree)
                 }
             }
         }
@@ -157,7 +162,7 @@ object SingleFundLedgerAPI {
     ): Q {
         val fund = this.fund
         val hierarchicalFund: HierarchicalElement<F> = HierarchicalElementAPI.run {
-            fund.toHierarchicalElement(hierarchicalTree)
+            fund.toHierarchicalElement(hierarchicalTree).getOrElse { empty(fund) }
         }
 
         val positiveTransaction: List<Option<Transaction<Q, D, F>>> =
@@ -253,7 +258,7 @@ object SingleFundLedgerAPI {
     ): List<Transaction<Q, D, F>> {
         val singleFundLedger = this
         val hierarchicalFund: HierarchicalElement<F> = HierarchicalElementAPI.run {
-            fund.toHierarchicalElement(hierarchicalTree)
+            fund.toHierarchicalElement(hierarchicalTree).getOrElse { empty(fund) }
         }
         return TransactionApi.run {
             singleFundLedger.fixTransactionOrientationAndFilter({
@@ -270,7 +275,7 @@ object SingleFundLedgerAPI {
     ): List<Transaction<Q, D, F>> {
         val singleFundLedger = this
         val hierarchicalFund: HierarchicalElement<F> = HierarchicalElementAPI.run {
-            fund.toHierarchicalElement(hierarchicalTree)
+            fund.toHierarchicalElement(hierarchicalTree).getOrElse { empty(fund) }
         }
         return TransactionApi.run {
             singleFundLedger.fixTransactionOrientationAndFilter({
