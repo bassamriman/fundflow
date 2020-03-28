@@ -15,7 +15,11 @@ data class Fund(
     override val description: String,
     val reference: FundRef = FundRef()
 ) : Describable,
-    Nameable
+    Nameable {
+    companion object {
+        fun empty(): Fund = Fund(name = "", description = "")
+    }
+}
 
 typealias FundHierarchy = HierarchicalTree<FundRef>
 typealias HierarchicalFund = HierarchicalElement<FundRef>

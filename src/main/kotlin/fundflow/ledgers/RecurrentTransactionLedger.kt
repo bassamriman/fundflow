@@ -1,9 +1,9 @@
 package fundflow.ledgers
 
 import arrow.core.Option
+import arrow.core.getOption
 import arrow.core.getOrElse
-import arrow.data.getOption
-import arrow.data.k
+import arrow.core.k
 import arrow.syntax.collections.flatten
 import common.*
 import common.ValueWithError.Companion.toValue

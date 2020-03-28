@@ -1,8 +1,8 @@
 package ledger
 
 import arrow.core.Option
-import arrow.data.getOption
-import arrow.data.k
+import arrow.core.getOption
+import arrow.core.k
 import arrow.syntax.collections.flatten
 import common.DateTimeInterval
 import fundflow.Fund

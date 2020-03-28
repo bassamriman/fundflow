@@ -1,9 +1,13 @@
 package graph
 
 import arrow.core.Option
+import arrow.core.extensions.list.foldable.nonEmpty
+import arrow.core.getOption
 import arrow.core.getOrElse
-import arrow.data.*
-import arrow.data.extensions.list.foldable.nonEmpty
+import arrow.mtl.Reader
+import arrow.mtl.map
+import arrow.mtl.reader
+import arrow.mtl.runId
 import common.*
 import common.ValueWithError.Companion.toValue
 import common.ValueWithError.Companion.withError

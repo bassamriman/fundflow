@@ -4,7 +4,7 @@ import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
 import arrow.core.getOrElse
-import arrow.data.runId
+import arrow.mtl.runId
 import arrow.syntax.collections.flatten
 import graph.HierarchicalElement
 import graph.HierarchicalElementAPI
