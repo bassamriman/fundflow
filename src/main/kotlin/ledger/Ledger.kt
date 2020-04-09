@@ -121,22 +121,10 @@ data class SingleFundLedgerSummary<Q, D, F>(
     val singleFundLedger: SingleFundLedger<Q, D, F>
 )
 
-data class SingleFundLedgerSummaryWithValue<Q, D, F>(
-    val fundFlow: Q,
-    val incomingTransaction: Collection<Transaction<Q, D, F>>,
-    val outgoingTransaction: Collection<Transaction<Q, D, F>>,
-    val singleFundLedger: SingleFundLedger<Q, D, F>
-)
-
-
-data class CombinableSingleFundLedgerSummary<Q, D, F, CD>(
-    val incomingTransaction: Collection<Transaction<Q, CD, F>>,
-    val outgoingTransaction: Collection<Transaction<Q, CD, F>>,
-    val singleFundLedger: SingleFundLedger<Q, D, F>
-)
-
 data class CombinableSingleFundLedgerSummaryWithValue<Q, D, F, CD>(
     val fundFlow: Q,
+    val incomingFlow : Q,
+    val outgoingFlow : Q,
     val incomingTransaction: Collection<Transaction<Q, CD, F>>,
     val outgoingTransaction: Collection<Transaction<Q, CD, F>>,
     val singleFundLedger: SingleFundLedger<Q, D, F>
@@ -232,6 +220,10 @@ object SingleFundLedgerAPI {
         )
     }.values
 
+    fun <Q, D, F> SingleFundLedger<Q, D, F>.outgoingFlow(
+        quantificationOps: CombinableQuantificationOps<Q>
+    ): Q = quantificationOps.combineAll(this.outgoingTransactions(quantificationOps).map{it.quantification})
+
     fun <Q, D, F, CD> SingleFundLedger<Q, D, F>.outgoingTransactions(
         quantificationOps: CombinableQuantificationOps<Q>,
         detailFactoryMonoid: CombinedTransactionDetailFactoryMonoid<Q, D, F, CD>
@@ -241,6 +233,10 @@ object SingleFundLedgerAPI {
             quantificationOps,
             detailFactoryMonoid
         )
+
+    fun <Q, D, F> SingleFundLedger<Q, D, F>.incomingFlow(
+        quantificationOps: CombinableQuantificationOps<Q>
+    ): Q = quantificationOps.combineAll(this.incomingTransactions(quantificationOps).map{it.quantification})
 
     fun <Q, D, F, CD> SingleFundLedger<Q, D, F>.incomingTransactions(
         quantificationOps: CombinableQuantificationOps<Q>,
@@ -322,6 +318,8 @@ object SingleFundLedgerAPI {
         detailFactoryMonoid: CombinedTransactionDetailFactoryMonoid<Q, D, F, CD>
     ): CombinableSingleFundLedgerSummaryWithValue<Q, D, F, CD> = CombinableSingleFundLedgerSummaryWithValue(
         this.fundFlow(quantificationOps),
+        this.incomingFlow(quantificationOps),
+        this.outgoingFlow(quantificationOps),
         this.incomingTransactions(quantificationOps, detailFactoryMonoid),
         this.outgoingTransactions(quantificationOps, detailFactoryMonoid),
         this
@@ -342,6 +340,8 @@ object SingleFundLedgerAPI {
         detailFactoryMonoid: CombinedTransactionDetailFactoryMonoid<Q, D, F, CD>
     ): CombinableSingleFundLedgerSummaryWithValue<Q, D, F, CD> = CombinableSingleFundLedgerSummaryWithValue(
         this.fundFlow(quantificationOps, hierarchicalTree),
+        this.incomingFlow(quantificationOps),
+        this.outgoingFlow(quantificationOps),
         this.incomingTransactions(quantificationOps, hierarchicalTree, detailFactoryMonoid),
         this.outgoingTransactions(quantificationOps, hierarchicalTree, detailFactoryMonoid),
         this

@@ -11,7 +11,7 @@ typealias DailyFlow = Amount<Daily>
 
 object DailyFlowOps {
     val ZERO: DailyFlow = Amount.zero(Daily)
-    operator fun Flow.invoke(value: BigDecimal): DailyFlow = Amount(value, Daily)
+    operator fun Daily.invoke(value: BigDecimal): DailyFlow = Amount(value, Daily)
 }
 
 

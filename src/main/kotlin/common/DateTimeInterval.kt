@@ -10,6 +10,8 @@ data class DateTimeInterval(val from: LocalDateTime, val to: LocalDateTime)
 
 object DateTimeIntervalAPI {
 
+    fun infinite() : DateTimeInterval = DateTimeInterval(LocalDateTime.MIN, LocalDateTime.MAX)
+
     fun rightBounded(to: LocalDateTime): DateTimeInterval = DateTimeInterval(LocalDateTime.MIN, to)
     fun leftBounded(from: LocalDateTime): DateTimeInterval = DateTimeInterval(from, LocalDateTime.MAX)
     fun bounded(from: LocalDateTime, to: LocalDateTime): Try<DateTimeInterval> =

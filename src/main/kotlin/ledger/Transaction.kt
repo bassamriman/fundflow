@@ -2,8 +2,10 @@ package ledger
 
 import arrow.core.Option
 import arrow.typeclasses.Monoid
+import common.Identifiable
 import graph.HierarchicalElement
 import graph.HierarchicalElementAPI
+import java.util.*
 
 enum class Sign {
     POSITIVE, NEGATIVE
@@ -16,13 +18,16 @@ interface QuantificationOps<T> {
 
 interface CombinableQuantificationOps<T> : QuantificationOps<T>, Monoid<T>
 
+data class TransactionRef(override val id: String = UUID.randomUUID().toString()) : Identifiable
+
 /**
  * Transaction in a ledger that transfer a value of type Asset
  */
 data class Transaction<out Q, out D, out E>(
     val quantification: Q,
     val details: D,
-    override val transactionCoordinates: TransactionCoordinates<E>
+    override val transactionCoordinates: TransactionCoordinates<E>,
+    val transactionRef: TransactionRef = TransactionRef()
 ) : HasTransactionCoordinates<E>
 
 /**
