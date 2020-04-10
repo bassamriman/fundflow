@@ -21,8 +21,10 @@ import java.time.LocalDateTime
  */
 
 data class RecurrentTransactionQuantification(val flow: Flow)
-object RecurrentTransactionQuantificationOps : CombinableQuantificationOps<RecurrentTransactionQuantification> {
-    override fun RecurrentTransactionQuantification.isNegative(): Boolean = this.flow.value < BigDecimal.ZERO
+object RecurrentTransactionQuantificationOps :
+    CombinableQuantificationOps<RecurrentTransactionQuantification> {
+    override fun RecurrentTransactionQuantification.isNegative(): Boolean =
+        this.flow.value < BigDecimal.ZERO
 
     operator fun List<Flow>.unaryMinus(): List<Flow> = this.map { AmountOps.run { -it } }
 
@@ -31,7 +33,8 @@ object RecurrentTransactionQuantificationOps : CombinableQuantificationOps<Recur
         return this.copy(flow = AmountOps.run { -quantification.flow })
     }
 
-    override fun empty(): RecurrentTransactionQuantification = RecurrentTransactionQuantification(DailyFlowOps.ZERO)
+    override fun empty(): RecurrentTransactionQuantification =
+        RecurrentTransactionQuantification(DailyFlowOps.ZERO)
 
     override fun RecurrentTransactionQuantification.combine(b: RecurrentTransactionQuantification): RecurrentTransactionQuantification {
         return FlowOps.run {
@@ -48,7 +51,9 @@ typealias RecurrentTransaction = Transaction<RecurrentTransactionQuantification,
 data class RecurrentTransactionDetail(val recurrence: DateTimeInterval)
 typealias CombinedRecurrentTransactionDetail = CombinedTransactionDetail<RecurrentTransaction>
 
-object CombinedRecurrentTransactionDetailMonoid : CombinedTransactionDetailMonoid<RecurrentTransaction>()
+object CombinedRecurrentTransactionDetailMonoid :
+    CombinedTransactionDetailMonoid<RecurrentTransaction>()
+
 object CombinedRecurrentTransactionDetailFactory :
     CombinedTransactionDetailFactory<RecurrentTransactionQuantification, RecurrentTransactionDetail, FundRef, CombinedRecurrentTransactionDetail> {
     override fun build(combinedTransactions: Collection<Transaction<RecurrentTransactionQuantification, RecurrentTransactionDetail, FundRef>>): CombinedRecurrentTransactionDetail =
@@ -65,7 +70,10 @@ typealias RecurrentTransactionLedger = Ledger<RecurrentTransactionQuantification
 
 typealias RecurrentTransactionLedgerFundSummary = CombinableSingleFundLedgerSummaryWithValue<RecurrentTransactionQuantification, RecurrentTransactionDetail, FundRef, CombinedRecurrentTransactionDetail>
 
-data class RecurrentTransactionFundView(val fund: Fund, val fundSummaries: RecurrentTransactionLedgerFundSummaries)
+data class RecurrentTransactionFundView(
+    val fund: Fund,
+    val fundSummaries: RecurrentTransactionLedgerFundSummaries
+)
 
 
 object RecurrentTransactionLedgerAPI {
@@ -102,7 +110,8 @@ object RecurrentTransactionLedgerAPI {
 object RecurrentTransactionAPI {
     fun RecurrentTransaction.toBalanceTransaction(interval: DateTimeInterval): List<RecurrentBalanceTransaction> {
         val recurrentTransaction: RecurrentTransaction = this
-        val incrementer = TimeFrequencyOps.run { recurrentTransaction.quantification.flow.unit.incrementer() }
+        val incrementer =
+            TimeFrequencyOps.run { recurrentTransaction.quantification.flow.unit.incrementer() }
         val transactionDates: List<LocalDateTime> = DateTimeIntervalAPI.run {
             (recurrentTransaction.details.recurrence intersection interval)
         }.map { (incrementer.run { it.increment() }) }.getOrElse { emptyList() }
@@ -138,9 +147,15 @@ data class RecurrentTransactionLedgerContext(
             fundHierarchy: FundHierarchy,
             recurrentTransactions: Collection<RecurrentTransaction>
         ): RecurrentTransactionLedgerContext {
-            val recurrentTransactionLedger = RecurrentTransactionLedger(recurrentTransactions.toList())
+            val recurrentTransactionLedger =
+                RecurrentTransactionLedger(recurrentTransactions.toList())
             val fundSummary =
-                LedgerApi.run { recurrentTransactionLedger.ledgerOf(funds.map { it.reference }, fundHierarchy) }.map {
+                LedgerApi.run {
+                    recurrentTransactionLedger.ledgerOf(
+                        funds.map { it.reference },
+                        fundHierarchy
+                    )
+                }.map {
                     SingleFundLedgerAPI.run {
                         it.fund to RecurrentTransactionLedgerFundSummaries(
                             it.fund,
@@ -178,7 +193,11 @@ object RecurrentTransactionLedgerContextAPI {
         this.copy(
             funds = this.funds - funds,
             fundHierarchy = HierarchicalTreeApi.run { fundHierarchy - funds },
-            recurrentTransactionLedger = LedgerApi.run { recurrentTransactionLedger.removeFunds(funds) },
+            recurrentTransactionLedger = LedgerApi.run {
+                recurrentTransactionLedger.removeFunds(
+                    funds
+                )
+            },
             fundSummaries = this.fundSummaries - funds
         )
 
@@ -231,9 +250,10 @@ object RecurrentTransactionLedgerContextAPI {
     }
 
     fun RecurrentTransactionLedgerContext.addRecurrentTransactions(transactions: Collection<RecurrentTransaction>): RecurrentTransactionLedgerContext {
+        val newTransactionLedger = LedgerApi.run { recurrentTransactionLedger + transactions }
         return this.copy(
-            recurrentTransactionLedger = LedgerApi.run { recurrentTransactionLedger + transactions },
-            fundSummaries = LedgerApi.run { recurrentTransactionLedger.splitByFund() }.map {
+            recurrentTransactionLedger = newTransactionLedger,
+            fundSummaries = LedgerApi.run { newTransactionLedger.splitByFund() }.map {
                 SingleFundLedgerAPI.run {
                     it.fund to RecurrentTransactionLedgerFundSummaries(
                         it.fund,
@@ -253,9 +273,10 @@ object RecurrentTransactionLedgerContextAPI {
     }
 
     fun RecurrentTransactionLedgerContext.removeRecurrentTransactions(transactions: Collection<RecurrentTransaction>): RecurrentTransactionLedgerContext {
+        val newTransactionLedger = LedgerApi.run { recurrentTransactionLedger + transactions }
         return this.copy(
-            recurrentTransactionLedger = LedgerApi.run { recurrentTransactionLedger - transactions },
-            fundSummaries = LedgerApi.run { recurrentTransactionLedger.splitByFund() }.map {
+            recurrentTransactionLedger = LedgerApi.run { newTransactionLedger },
+            fundSummaries = LedgerApi.run { newTransactionLedger.splitByFund() }.map {
                 SingleFundLedgerAPI.run {
                     it.fund to RecurrentTransactionLedgerFundSummaries(
                         it.fund,
@@ -278,9 +299,10 @@ object RecurrentTransactionLedgerContextAPI {
         before: Collection<RecurrentTransaction>,
         after: Collection<RecurrentTransaction>
     ): RecurrentTransactionLedgerContext {
+        val newTransactionLedger = LedgerApi.run { (recurrentTransactionLedger - before) + after }
         return this.copy(
-            recurrentTransactionLedger = LedgerApi.run { (recurrentTransactionLedger - before) + after },
-            fundSummaries = LedgerApi.run { recurrentTransactionLedger.splitByFund() }.map {
+            recurrentTransactionLedger = LedgerApi.run { newTransactionLedger },
+            fundSummaries = LedgerApi.run { newTransactionLedger.splitByFund() }.map {
                 SingleFundLedgerAPI.run {
                     it.fund to RecurrentTransactionLedgerFundSummaries(
                         it.fund,
@@ -313,23 +335,36 @@ object RecurrentTransactionLedgerContextAPI {
 
     fun RecurrentTransactionLedgerContext.rollOutBalanceTransactionsIn(timeInterval: DateTimeInterval): RecurrentBalanceTransactionLedgerContext {
         val globalBalanceLedger: RecurrentBalanceLedger =
-            RecurrentTransactionLedgerAPI.run { recurrentTransactionLedger.toBalanceLedger(timeInterval) }
-
-        val fundSummaries = LedgerApi.run { globalBalanceLedger.ledgerOf(funds.keys, fundHierarchy) }.map {
-            SingleFundLedgerAPI.run {
-                it.fund to RecurrentBalanceTransactionLedgerFundSummaries(
-                    timeInterval,
-                    it.fund,
-                    it.summary(BalanceTransactionOps, CombinedRecurrentBalanceTransactionDetailFactoryMonoid),
-                    it.summary(
-                        BalanceTransactionOps,
-                        fundHierarchy,
-                        CombinedRecurrentBalanceTransactionDetailFactoryMonoid
-                    )
+            RecurrentTransactionLedgerAPI.run {
+                recurrentTransactionLedger.toBalanceLedger(
+                    timeInterval
                 )
             }
-        }.toMap()
-        return RecurrentBalanceTransactionLedgerContext(funds, timeInterval, globalBalanceLedger, fundSummaries)
+
+        val fundSummaries =
+            LedgerApi.run { globalBalanceLedger.ledgerOf(funds.keys, fundHierarchy) }.map {
+                SingleFundLedgerAPI.run {
+                    it.fund to RecurrentBalanceTransactionLedgerFundSummaries(
+                        timeInterval,
+                        it.fund,
+                        it.summary(
+                            BalanceTransactionOps,
+                            CombinedRecurrentBalanceTransactionDetailFactoryMonoid
+                        ),
+                        it.summary(
+                            BalanceTransactionOps,
+                            fundHierarchy,
+                            CombinedRecurrentBalanceTransactionDetailFactoryMonoid
+                        )
+                    )
+                }
+            }.toMap()
+        return RecurrentBalanceTransactionLedgerContext(
+            funds,
+            timeInterval,
+            globalBalanceLedger,
+            fundSummaries
+        )
     }
 
     fun RecurrentTransactionLedgerContext.view(fundRef: FundRef): Option<RecurrentTransactionFundView> =
@@ -340,7 +375,42 @@ object RecurrentTransactionLedgerContextAPI {
     fun RecurrentTransactionLedgerContext.viewAll(): Map<FundRef, RecurrentTransactionFundView> =
         this.funds.values.map { fund ->
             this.fundSummaries.getOption(fund.reference)
-                .map { Pair(fund.reference, RecurrentTransactionFundView(fund, it)) }
-        }.flatten().toMap()
+                .map { Pair(fund.reference, RecurrentTransactionFundView(fund, it)) }.getOrElse {
+                    Pair(
+                        fund.reference, RecurrentTransactionFundView(
+                            fund,
+                            RecurrentTransactionLedgerFundSummaries(
+                                fund.reference,
+                                RecurrentTransactionLedgerFundSummary(
+                                    RecurrentTransactionQuantification(
+                                        DailyFlowOps.ZERO
+                                    ),
+                                    RecurrentTransactionQuantification(
+                                        DailyFlowOps.ZERO
+                                    ),
+                                    RecurrentTransactionQuantification(
+                                        DailyFlowOps.ZERO
+                                    ),
+                                    emptyList(),
+                                    emptyList(), SingleFundLedger(fund.reference, Ledger.empty())
+                                ),
+                                RecurrentTransactionLedgerFundSummary(
+                                    RecurrentTransactionQuantification(
+                                        DailyFlowOps.ZERO
+                                    ),
+                                    RecurrentTransactionQuantification(
+                                        DailyFlowOps.ZERO
+                                    ),
+                                    RecurrentTransactionQuantification(
+                                        DailyFlowOps.ZERO
+                                    ),
+                                    emptyList(),
+                                    emptyList(), SingleFundLedger(fund.reference, Ledger.empty())
+                                )
+                            )
+                        )
+                    )
+                }
+        }.toMap()
 }
 

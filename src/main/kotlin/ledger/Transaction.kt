@@ -27,7 +27,7 @@ data class Transaction<out Q, out D, out E>(
     val quantification: Q,
     val details: D,
     override val transactionCoordinates: TransactionCoordinates<E>,
-    val transactionRef: TransactionRef = TransactionRef()
+    val reference: TransactionRef = TransactionRef()
 ) : HasTransactionCoordinates<E>
 
 /**
