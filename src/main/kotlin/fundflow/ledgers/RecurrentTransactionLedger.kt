@@ -5,7 +5,6 @@ import arrow.core.getOption
 import arrow.core.getOrElse
 import arrow.core.k
 import arrow.syntax.collections.flatten
-import arrow.typeclasses.Monoid
 import common.*
 import common.ValueWithError.Companion.toValue
 import common.ValueWithError.Companion.withErrors
@@ -19,10 +18,12 @@ import java.time.LocalDateTime
  * A ledger that maintains a "flow of fund" between two toList
  * Can be seen integral of fund transaction ledger
  */
-
 data class RecurrentTransactionQuantification(val flow: Flow)
+
+data class RecurrentTransactionDetail(val recurrence: DateTimeInterval)
+
 object RecurrentTransactionQuantificationOps :
-    CombinableQuantificationOps<RecurrentTransactionQuantification> {
+    QuantificationOps<RecurrentTransactionQuantification> {
     override fun RecurrentTransactionQuantification.isNegative(): Boolean =
         this.flow.value < BigDecimal.ZERO
 
@@ -32,43 +33,12 @@ object RecurrentTransactionQuantificationOps :
         val quantification = this
         return this.copy(flow = AmountOps.run { -quantification.flow })
     }
-
-    override fun empty(): RecurrentTransactionQuantification =
-        RecurrentTransactionQuantification(DailyFlowOps.ZERO)
-
-    override fun RecurrentTransactionQuantification.combine(b: RecurrentTransactionQuantification): RecurrentTransactionQuantification {
-        return FlowOps.run {
-            RecurrentTransactionQuantification(AmountOps.run {
-                flow.toDailyFlow() + b.flow.toDailyFlow()
-            })
-        }
-    }
 }
-
 
 typealias RecurrentTransaction = Transaction<RecurrentTransactionQuantification, RecurrentTransactionDetail, FundRef>
-
-data class RecurrentTransactionDetail(val recurrence: DateTimeInterval)
-typealias CombinedRecurrentTransactionDetail = CombinedTransactionDetail<RecurrentTransaction>
-
-object CombinedRecurrentTransactionDetailMonoid :
-    CombinedTransactionDetailMonoid<RecurrentTransaction>()
-
-object CombinedRecurrentTransactionDetailFactory :
-    CombinedTransactionDetailFactory<RecurrentTransactionQuantification, RecurrentTransactionDetail, FundRef, CombinedRecurrentTransactionDetail> {
-    override fun build(combinedTransactions: Collection<Transaction<RecurrentTransactionQuantification, RecurrentTransactionDetail, FundRef>>): CombinedRecurrentTransactionDetail =
-        CombinedRecurrentTransactionDetail(combinedTransactions)
-}
-
-object CombinedRecurrentTransactionDetailFactoryMonoid :
-    CombinedTransactionDetailFactoryMonoid<RecurrentTransactionQuantification, RecurrentTransactionDetail, FundRef, CombinedRecurrentTransactionDetail>,
-    CombinedTransactionDetailFactory<RecurrentTransactionQuantification, RecurrentTransactionDetail, FundRef, CombinedRecurrentTransactionDetail> by CombinedRecurrentTransactionDetailFactory,
-    Monoid<CombinedRecurrentTransactionDetail> by CombinedRecurrentTransactionDetailMonoid
-
-
 typealias RecurrentTransactionLedger = Ledger<RecurrentTransactionQuantification, RecurrentTransactionDetail, FundRef>
 
-typealias RecurrentTransactionLedgerFundSummary = CombinableSingleFundLedgerSummaryWithValue<RecurrentTransactionQuantification, RecurrentTransactionDetail, FundRef, CombinedRecurrentTransactionDetail>
+typealias RecurrentTransactionLedgerFundSummary = SingleFundLedgerSummary<RecurrentTransactionQuantification, RecurrentTransactionDetail, FundRef>
 
 data class RecurrentTransactionFundView(
     val fund: Fund,
@@ -91,6 +61,19 @@ object RecurrentTransactionLedgerAPI {
                             )
                         }
                     }
+                }
+            }
+        }
+
+    fun RecurrentTransactionLedger.flowAt(dataTime: LocalDateTime): CombinableRecurrentTransactionLedger =
+        this.let {
+            LedgerApi.run {
+                it.mapList {
+                    it.map {
+                        CombinableRecurrentTransactionLedgerAPI.run {
+                            it.flowAt(dataTime)
+                        }
+                    }.flatten()
                 }
             }
         }
@@ -159,15 +142,8 @@ data class RecurrentTransactionLedgerContext(
                     SingleFundLedgerAPI.run {
                         it.fund to RecurrentTransactionLedgerFundSummaries(
                             it.fund,
-                            it.summary(
-                                RecurrentTransactionQuantificationOps,
-                                CombinedRecurrentTransactionDetailFactoryMonoid
-                            ),
-                            it.summary(
-                                RecurrentTransactionQuantificationOps,
-                                fundHierarchy,
-                                CombinedRecurrentTransactionDetailFactoryMonoid
-                            )
+                            it.summary(RecurrentTransactionQuantificationOps),
+                            it.summary(RecurrentTransactionQuantificationOps, fundHierarchy)
                         )
                     }
                 }.toMap()
@@ -180,10 +156,6 @@ data class RecurrentTransactionLedgerContext(
         }
     }
 }
-
-typealias RecurrentTransactionLedgerContextVersion = Version<RecurrentTransactionLedgerContext, FundFlowActionAcknowledgement<*, *>>
-
-typealias RecurrentTransactionLedgerContextVersioning = Versioning<RecurrentTransactionLedgerContext, FundFlowActionAcknowledgement<*, *>>
 
 object RecurrentTransactionLedgerContextAPI {
     fun RecurrentTransactionLedgerContext.addFunds(funds: Collection<Fund>): RecurrentTransactionLedgerContext =
@@ -226,8 +198,7 @@ object RecurrentTransactionLedgerContextAPI {
                         entry.key to entry.value.copy(summaryWithHierarchy = SingleFundLedgerAPI.run {
                             singleFundLedger.summary(
                                 RecurrentTransactionQuantificationOps,
-                                newFundHierarchy.v,
-                                CombinedRecurrentTransactionDetailFactoryMonoid
+                                newFundHierarchy.v
                             )
                         })
                     }
@@ -257,15 +228,8 @@ object RecurrentTransactionLedgerContextAPI {
                 SingleFundLedgerAPI.run {
                     it.fund to RecurrentTransactionLedgerFundSummaries(
                         it.fund,
-                        it.summary(
-                            RecurrentTransactionQuantificationOps,
-                            CombinedRecurrentTransactionDetailFactoryMonoid
-                        ),
-                        it.summary(
-                            RecurrentTransactionQuantificationOps,
-                            fundHierarchy,
-                            CombinedRecurrentTransactionDetailFactoryMonoid
-                        )
+                        it.summary(RecurrentTransactionQuantificationOps),
+                        it.summary(RecurrentTransactionQuantificationOps, fundHierarchy)
                     )
                 }
             }.toMap()
@@ -280,15 +244,8 @@ object RecurrentTransactionLedgerContextAPI {
                 SingleFundLedgerAPI.run {
                     it.fund to RecurrentTransactionLedgerFundSummaries(
                         it.fund,
-                        it.summary(
-                            RecurrentTransactionQuantificationOps,
-                            CombinedRecurrentTransactionDetailFactoryMonoid
-                        ),
-                        it.summary(
-                            RecurrentTransactionQuantificationOps,
-                            fundHierarchy,
-                            CombinedRecurrentTransactionDetailFactoryMonoid
-                        )
+                        it.summary(RecurrentTransactionQuantificationOps),
+                        it.summary(RecurrentTransactionQuantificationOps, fundHierarchy)
                     )
                 }
             }.toMap()
@@ -306,15 +263,8 @@ object RecurrentTransactionLedgerContextAPI {
                 SingleFundLedgerAPI.run {
                     it.fund to RecurrentTransactionLedgerFundSummaries(
                         it.fund,
-                        it.summary(
-                            RecurrentTransactionQuantificationOps,
-                            CombinedRecurrentTransactionDetailFactoryMonoid
-                        ),
-                        it.summary(
-                            RecurrentTransactionQuantificationOps,
-                            fundHierarchy,
-                            CombinedRecurrentTransactionDetailFactoryMonoid
-                        )
+                        it.summary(RecurrentTransactionQuantificationOps),
+                        it.summary(RecurrentTransactionQuantificationOps, fundHierarchy)
                     )
                 }
             }.toMap()
@@ -367,6 +317,43 @@ object RecurrentTransactionLedgerContextAPI {
         )
     }
 
+    fun RecurrentTransactionLedgerContext.flowAt(dateTime: LocalDateTime): CombinableRecurrentTransactionLedgerContext {
+        val combinableRecurrentTransactionLedger: CombinableRecurrentTransactionLedger =
+            RecurrentTransactionLedgerAPI.run {
+                recurrentTransactionLedger.flowAt(dateTime)
+            }
+
+        val fundSummaries =
+            LedgerApi.run {
+                combinableRecurrentTransactionLedger.ledgerOf(
+                    funds.keys,
+                    fundHierarchy
+                )
+            }.map {
+                SingleFundLedgerAPI.run {
+                    it.fund to CombinableRecurrentTransactionLedgerFundSummaries(
+                        DateTimeIntervalAPI.run { point(dateTime) },
+                        it.fund,
+                        it.summary(
+                            CombinableRecurrentTransactionQuantificationOps,
+                            CombinedCombinableRecurrentTransactionDetailFactoryMonoid
+                        ),
+                        it.summary(
+                            CombinableRecurrentTransactionQuantificationOps,
+                            fundHierarchy,
+                            CombinedCombinableRecurrentTransactionDetailFactoryMonoid
+                        )
+                    )
+                }
+            }.toMap()
+        return CombinableRecurrentTransactionLedgerContext(
+            funds,
+            DateTimeIntervalAPI.run { point(dateTime) },
+            combinableRecurrentTransactionLedger,
+            fundSummaries
+        )
+    }
+
     fun RecurrentTransactionLedgerContext.view(fundRef: FundRef): Option<RecurrentTransactionFundView> =
         this.funds.k().getOption(fundRef).flatMap { fund ->
             this.fundSummaries.getOption(fundRef).map { RecurrentTransactionFundView(fund, it) }
@@ -382,30 +369,14 @@ object RecurrentTransactionLedgerContextAPI {
                             RecurrentTransactionLedgerFundSummaries(
                                 fund.reference,
                                 RecurrentTransactionLedgerFundSummary(
-                                    RecurrentTransactionQuantification(
-                                        DailyFlowOps.ZERO
-                                    ),
-                                    RecurrentTransactionQuantification(
-                                        DailyFlowOps.ZERO
-                                    ),
-                                    RecurrentTransactionQuantification(
-                                        DailyFlowOps.ZERO
-                                    ),
                                     emptyList(),
-                                    emptyList(), SingleFundLedger(fund.reference, Ledger.empty())
+                                    emptyList(),
+                                    SingleFundLedger(fund.reference, Ledger.empty())
                                 ),
                                 RecurrentTransactionLedgerFundSummary(
-                                    RecurrentTransactionQuantification(
-                                        DailyFlowOps.ZERO
-                                    ),
-                                    RecurrentTransactionQuantification(
-                                        DailyFlowOps.ZERO
-                                    ),
-                                    RecurrentTransactionQuantification(
-                                        DailyFlowOps.ZERO
-                                    ),
                                     emptyList(),
-                                    emptyList(), SingleFundLedger(fund.reference, Ledger.empty())
+                                    emptyList(),
+                                    SingleFundLedger(fund.reference, Ledger.empty())
                                 )
                             )
                         )
