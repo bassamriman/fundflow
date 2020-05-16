@@ -6,8 +6,10 @@ import arrow.core.getOrElse
 import arrow.core.k
 import arrow.syntax.collections.flatten
 import common.*
-import common.ValueWithError.Companion.toValue
+import common.ValueWithError.Companion.ve
 import common.ValueWithError.Companion.withErrors
+import common.unit.AmountOps
+import common.unit.TimeFrequencyOps
 import fundflow.*
 import graph.HierarchicalTreeApi
 import ledger.*
@@ -47,23 +49,6 @@ data class RecurrentTransactionFundView(
 
 
 object RecurrentTransactionLedgerAPI {
-
-    fun RecurrentTransactionLedger.toDailyFlow(): DailyFlowLedger =
-        this.let {
-            LedgerApi.run {
-                it.mapList {
-                    FlowOps.run {
-                        it.map {
-                            DailyFlowTransaction(
-                                it.quantification.flow.toDailyFlow(),
-                                Unit,
-                                it.transactionCoordinates
-                            )
-                        }
-                    }
-                }
-            }
-        }
 
     fun RecurrentTransactionLedger.flowAt(dataTime: LocalDateTime): CombinableRecurrentTransactionLedger =
         this.let {
@@ -210,7 +195,7 @@ object RecurrentTransactionLedgerContextAPI {
         return this.copy(
             fundHierarchy = newFundHierarchy.v,
             fundSummaries = newFundSummaries
-        ).toValue().withErrors(newFundHierarchy.e)
+        ).ve().withErrors(newFundHierarchy.e)
     }
 
     fun RecurrentTransactionLedgerContext.removeFundRelation(

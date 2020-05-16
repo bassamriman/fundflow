@@ -3,7 +3,6 @@ package fundflow
 import common.Describable
 import common.Identifiable
 import common.Nameable
-import graph.HierarchicalElement
 import graph.HierarchicalTree
 import graph.ParentChild
 import java.util.*
@@ -22,8 +21,6 @@ data class Fund(
 }
 
 typealias FundHierarchy = HierarchicalTree<FundRef>
-typealias HierarchicalFund = HierarchicalElement<FundRef>
-
 typealias FundRelation = ParentChild<FundRef>
 
 

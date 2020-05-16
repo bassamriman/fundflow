@@ -4,7 +4,7 @@ import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
 import arrow.typeclasses.Monoid
-import common.AmountOps
+import common.unit.AmountOps
 import common.DateTimeIntervalAPI
 import fundflow.*
 import fundflow.FlowOps.toDailyFlow

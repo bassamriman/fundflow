@@ -1,5 +1,7 @@
 package common
 
+import arrow.core.Option
+
 
 interface Error {
     val message: String
@@ -20,13 +22,21 @@ data class ChildCannotBeParentOfItselfError<F>(val element: F) : Error {
         "Element $element cannot be parent of itself"
 }
 
-data class ValueWithError<V>(val v: V, val e: Collection<Error>) {
+interface ValueWithError<V> {
+    val v: V
+    val e: Collection<Error>
+
     companion object {
-        fun <V> V.toValue(): ValueWithError<V> = ValueWithError(this, emptyList())
+        fun <V> V.ve(): ValueWithError<V> = ValueWithErrorImpl(this, emptyList())
+
         fun <V> ValueWithError<V>.withError(error: Error): ValueWithError<V> =
-            ValueWithError(this.v, this.e + error)
+            ValueWithErrorImpl(this.v, this.e + error)
 
         fun <V> ValueWithError<V>.withErrors(errors: Collection<Error>): ValueWithError<V> =
-            ValueWithError(this.v, this.e + errors)
+            ValueWithErrorImpl(this.v, this.e + errors)
+
     }
 }
+
+data class ValueWithErrorImpl<V>(override val v: V, override val e: Collection<Error>) :
+    ValueWithError<V>

@@ -9,7 +9,7 @@ import arrow.mtl.map
 import arrow.mtl.reader
 import arrow.mtl.runId
 import common.*
-import common.ValueWithError.Companion.toValue
+import common.ValueWithError.Companion.ve
 import common.ValueWithError.Companion.withError
 import common.ValueWithError.Companion.withErrors
 
@@ -209,14 +209,14 @@ object HierarchicalTreeApi {
         relations: Collection<ParentChild<F>>
     ): ValueWithError<HierarchicalTree<F>> =
         relations.fold(
-            this.toValue(),
+            this.ve(),
             { previous, newRelation ->
                 previous.v.addParentChildRelation(newRelation.parent, newRelation.child).withErrors(previous.e)
             })
 
     fun <F> HierarchicalTree<F>.addParentChildRelation(parent: F, child: F): ValueWithError<HierarchicalTree<F>> =
         if (parent == child) {
-            this.toValue().withError(ChildCannotBeParentOfItselfError(child))
+            this.ve().withError(ChildCannotBeParentOfItselfError(child))
         } else {
             val errors: List<Error> = (parent descendantOf child).map {
                 if (it)
@@ -228,8 +228,8 @@ object HierarchicalTreeApi {
                 else emptyList()
             }.runId(this)
 
-            if (errors.nonEmpty()) this.toValue().withErrors(errors)
-            else this.unsafeAdd(parent, child).toValue()
+            if (errors.nonEmpty()) this.ve().withErrors(errors)
+            else this.unsafeAdd(parent, child).ve()
         }
 
 

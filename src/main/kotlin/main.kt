@@ -1,4 +1,7 @@
 import common.*
+import common.unit.Amount
+import common.unit.BiWeekly
+import common.unit.Monthly
 import fundflow.Fund
 import fundflow.FundHierarchy
 import fundflow.FundRef
@@ -69,20 +72,35 @@ fun main(args: Array<String>) {
 
     val carLeasePayment =
         RecurrentTransaction(
-            quantification = RecurrentTransactionQuantification(Amount(200.bd, BiWeekly)),
+            quantification = RecurrentTransactionQuantification(
+                Amount(
+                    200.bd,
+                    BiWeekly
+                )
+            ),
             details = RecurrentTransactionDetail(dateTimeInterval),
             transactionCoordinates = TransactionCoordinates(income.reference, car.reference)
         )
     val rentPayment =
         RecurrentTransaction(
-            quantification = RecurrentTransactionQuantification(Amount(1200.bd, Monthly)),
+            quantification = RecurrentTransactionQuantification(
+                Amount(
+                    1200.bd,
+                    Monthly
+                )
+            ),
             details = RecurrentTransactionDetail(dateTimeInterval),
             transactionCoordinates = TransactionCoordinates(income.reference, house.reference)
         )
 
     val travelPayment =
         RecurrentTransaction(
-            quantification = RecurrentTransactionQuantification(Amount(100.bd, BiWeekly)),
+            quantification = RecurrentTransactionQuantification(
+                Amount(
+                    100.bd,
+                    BiWeekly
+                )
+            ),
             details = RecurrentTransactionDetail(dateTimeInterval),
             transactionCoordinates = TransactionCoordinates(income.reference, travel.reference)
         )

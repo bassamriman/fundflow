@@ -1,9 +1,6 @@
-package common
+package common.unit
 
 import java.math.BigDecimal
-
-
-//data class Frequency(occurrence : BigDecimal, )
 
 data class Amount<out U : Unit>(val value: BigDecimal, val unit: U) {
     companion object {
@@ -13,9 +10,6 @@ data class Amount<out U : Unit>(val value: BigDecimal, val unit: U) {
 
 object AmountOps {
     operator fun <U : Unit> Amount<U>.unaryMinus(): Amount<U> = this.copy(value = -value)
-    operator fun <U : Unit> Amount<U>.plus(b: Amount<U>): Amount<U> {
-        val a = this.copy(value = this.value + b.value)
-
-        return a
-    }
+    operator fun <U : Unit> Amount<U>.plus(b: Amount<U>): Amount<U> =
+        this.copy(value = this.value + b.value)
 }
