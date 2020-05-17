@@ -1,8 +1,10 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm'
+    id "org.jlleitschuh.gradle.ktlint"
 }
 
+apply plugin: "org.jlleitschuh.gradle.ktlint-idea"
 apply plugin: "kotlin-kapt"
 
 group 'ca.rimanware.fundflow'
@@ -24,7 +26,7 @@ dependencies {
     implementation "io.arrow-kt:arrow-syntax:$arrow_version"
     implementation "io.arrow-kt:arrow-mtl-data:$arrow_version"
     implementation "io.arrow-kt:arrow-core-data:$arrow_version"
-    kapt    "io.arrow-kt:arrow-meta:$arrow_version"
+    kapt "io.arrow-kt:arrow-meta:$arrow_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation 'io.kotlintest:kotlintest-runner-junit5:3.3.0'
@@ -40,3 +42,4 @@ compileKotlin {
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
+

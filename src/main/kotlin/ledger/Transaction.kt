@@ -21,7 +21,7 @@ interface CombinableQuantificationOps<T> : QuantificationOps<T>, Monoid<T>
 data class TransactionRef(override val id: String = UUID.randomUUID().toString()) : Identifiable
 
 /**
- * Transaction in a ledger that transfer a value of type Asset
+ * Transaction that represents a transfer of a quantifiable element from a source element to destination element
  */
 data class Transaction<out Q, out D, out E>(
     val quantification: Q,
@@ -77,7 +77,8 @@ object TransactionApi {
     fun <Q, D, E> Transaction<Q, D, E>.isPositive(fund: HierarchicalElement<E>): Option<Boolean> =
         this.sign(fund).map { it == Sign.POSITIVE }
 
-    fun <Q, D, E> Transaction<Q, D, E>.isNegative(fund: E): Option<Boolean> = this.isPositive(fund).map { !it }
+    fun <Q, D, E> Transaction<Q, D, E>.isNegative(fund: E): Option<Boolean> =
+        this.isPositive(fund).map { !it }
 
     fun <Q, D, E> Transaction<Q, D, E>.isNegative(fund: HierarchicalElement<E>): Option<Boolean> =
         this.isPositive(fund).map { !it }
