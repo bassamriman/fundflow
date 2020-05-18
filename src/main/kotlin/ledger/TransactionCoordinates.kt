@@ -53,4 +53,3 @@ typealias TransactionCoordinatesOf<F> = arrow.Kind<ForTransactionCoordinates, F>
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
 inline fun <F> TransactionCoordinatesOf<F>.fix(): TransactionCoordinates<F> =
     this as TransactionCoordinates<F>
-

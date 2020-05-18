@@ -29,4 +29,3 @@ data class UnitToUnitConverterImpl<S : Unit, T : Unit>(
     override val source: S,
     override val target: T
 ) : UnitToUnitConverter<S, T>
-

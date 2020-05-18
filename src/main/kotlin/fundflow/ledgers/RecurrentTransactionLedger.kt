@@ -5,16 +5,28 @@ import arrow.core.getOption
 import arrow.core.getOrElse
 import arrow.core.k
 import arrow.syntax.collections.flatten
-import common.*
+import common.DateTimeInterval
+import common.DateTimeIntervalAPI
+import common.ValueWithError
 import common.ValueWithError.Companion.ve
 import common.ValueWithError.Companion.withErrors
 import common.unit.AmountOps
 import common.unit.TimeFrequencyOps
-import fundflow.*
+import fundflow.Flow
+import fundflow.Fund
+import fundflow.FundHierarchy
+import fundflow.FundRef
+import fundflow.FundRelation
 import graph.HierarchicalTreeApi
-import ledger.*
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import ledger.Ledger
+import ledger.LedgerApi
+import ledger.QuantificationOps
+import ledger.SingleFundLedger
+import ledger.SingleFundLedgerAPI
+import ledger.SingleFundLedgerSummary
+import ledger.Transaction
 
 /**
  * A ledger that maintains a "flow of fund" between two toList
@@ -46,7 +58,6 @@ data class RecurrentTransactionFundView(
     val fund: Fund,
     val fundSummaries: RecurrentTransactionLedgerFundSummaries
 )
-
 
 object RecurrentTransactionLedgerAPI {
 
@@ -202,7 +213,7 @@ object RecurrentTransactionLedgerContextAPI {
         parent: FundRef,
         child: FundRef
     ): RecurrentTransactionLedgerContext {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     fun RecurrentTransactionLedgerContext.addRecurrentTransactions(transactions: Collection<RecurrentTransaction>): RecurrentTransactionLedgerContext {
@@ -369,4 +380,3 @@ object RecurrentTransactionLedgerContextAPI {
                 }
         }.toMap()
 }
-

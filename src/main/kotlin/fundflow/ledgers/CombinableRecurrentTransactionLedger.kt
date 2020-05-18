@@ -4,13 +4,26 @@ import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
 import arrow.typeclasses.Monoid
-import common.unit.AmountOps
 import common.DateTimeIntervalAPI
-import fundflow.*
+import common.unit.AmountOps
+import fundflow.DailyFlowOps
+import fundflow.Flow
+import fundflow.FlowOps
 import fundflow.FlowOps.toDailyFlow
-import ledger.*
+import fundflow.Fund
+import fundflow.FundRef
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import ledger.CombinableQuantificationOps
+import ledger.CombinableSingleFundLedgerSummaryWithValue
+import ledger.CombinedTransactionDetailFactory
+import ledger.CombinedTransactionDetailFactoryMonoid
+import ledger.FundView
+import ledger.FundViewFactory
+import ledger.Ledger
+import ledger.LedgerContext
+import ledger.LedgerFundSummaries
+import ledger.Transaction
 
 data class CombinableRecurrentTransactionQuantification(val flow: Flow)
 object CombinableRecurrentTransactionQuantificationOps :
@@ -61,7 +74,6 @@ object CombinedCombinableRecurrentTransactionDetailFactoryMonoid :
     CombinedTransactionDetailFactory<CombinableRecurrentTransactionQuantification, CombinableRecurrentTransactionDetail, FundRef, CombinedCombinableRecurrentTransactionDetail> by CombinedCombinableRecurrentTransactionDetailFactory,
     Monoid<CombinedCombinableRecurrentTransactionDetail> by CombinedCombinableRecurrentTransactionDetailMonoid
 
-
 typealias CombinableRecurrentTransactionLedger = Ledger<CombinableRecurrentTransactionQuantification, CombinableRecurrentTransactionDetail, FundRef>
 
 typealias CombinableRecurrentTransactionLedgerFundSummary = CombinableSingleFundLedgerSummaryWithValue<CombinableRecurrentTransactionQuantification, CombinableRecurrentTransactionDetail, FundRef, CombinedCombinableRecurrentTransactionDetail>
@@ -77,8 +89,6 @@ object CombinableRecurrentTransactionFundViewFactory :
         fundSummaries: CombinableRecurrentTransactionLedgerFundSummaries
     ): CombinableRecurrentTransactionFundView =
         CombinableRecurrentTransactionFundView(fund, fundSummaries)
-
-
 }
 
 object CombinableRecurrentTransactionLedgerAPI {

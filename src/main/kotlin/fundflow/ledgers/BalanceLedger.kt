@@ -3,9 +3,18 @@ package fundflow.ledgers
 import arrow.typeclasses.Monoid
 import fundflow.Fund
 import fundflow.FundRef
-import ledger.*
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import ledger.CombinableQuantificationOps
+import ledger.CombinableSingleFundLedgerSummaryWithValue
+import ledger.CombinedTransactionDetailFactory
+import ledger.CombinedTransactionDetailFactoryMonoid
+import ledger.FundView
+import ledger.FundViewFactory
+import ledger.Ledger
+import ledger.LedgerContext
+import ledger.LedgerFundSummaries
+import ledger.Transaction
 
 /**
  * A ledger that maintains a "flow of fund" between two toList
@@ -28,7 +37,9 @@ open class CombinedTransactionDetailMonoid<T>() : Monoid<CombinedTransactionDeta
 data class BalanceTransactionDetail(val timestamp: LocalDateTime)
 typealias CombinedBalanceTransactionDetail = CombinedTransactionDetail<BalanceTransaction>
 
-object CombinedBalanceTransactionDetailMonoid : CombinedTransactionDetailMonoid<BalanceTransaction>()
+object CombinedBalanceTransactionDetailMonoid :
+    CombinedTransactionDetailMonoid<BalanceTransaction>()
+
 object CombinedBalanceTransactionDetailFactory :
     CombinedTransactionDetailFactory<BigDecimal, BalanceTransactionDetail, FundRef, CombinedBalanceTransactionDetail> {
     override fun build(combinedTransactions: Collection<Transaction<BigDecimal, BalanceTransactionDetail, FundRef>>): CombinedBalanceTransactionDetail =

@@ -78,7 +78,6 @@ object BiDirectionalAdjacentListGraphAPI {
         this.removeOutgoing(elements).removeIncoming(elements)
 }
 
-
 data class AncestorAndDescendantAdjacentListTree<out F>(
     val element: F,
     val parentsChildren: BiDirectionalAdjacentListGraph<F>,
@@ -158,5 +157,4 @@ object BiDirectionalAdjacentListTreeAPI {
             parentsChildren = BiDirectionalAdjacentListGraphAPI.run { parentsChildren - elements },
             ancestorsDescendants = BiDirectionalAdjacentListGraphAPI.run { ancestorsDescendants - elements }
         )
-
 }
