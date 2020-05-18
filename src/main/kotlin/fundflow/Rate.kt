@@ -24,4 +24,11 @@ object FlowOps {
                 it convertTo Daily
             }
         }
+
+    fun Flow.toTimeFrequency(timeFrequency: TimeFrequency): Flow =
+        this.let {
+            TimeFrequencyOps.run {
+                it convertTo timeFrequency
+            }
+        }
 }

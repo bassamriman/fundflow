@@ -6,10 +6,11 @@ import arrow.core.Some
 import arrow.typeclasses.Monoid
 import common.DateTimeIntervalAPI
 import common.unit.AmountOps
+import common.unit.TimeFrequency
 import fundflow.DailyFlowOps
 import fundflow.Flow
 import fundflow.FlowOps
-import fundflow.FlowOps.toDailyFlow
+import fundflow.FlowOps.toTimeFrequency
 import fundflow.Fund
 import fundflow.FundRef
 import java.math.BigDecimal
@@ -92,13 +93,20 @@ object CombinableRecurrentTransactionFundViewFactory :
 }
 
 object CombinableRecurrentTransactionLedgerAPI {
-    fun RecurrentTransaction.flowAt(dataTime: LocalDateTime): Option<CombinableRecurrentTransaction> =
+    fun RecurrentTransaction.flowAt(
+        dataTime: LocalDateTime,
+        timeFrequency: TimeFrequency
+    ): Option<CombinableRecurrentTransaction> =
         this.let {
             DateTimeIntervalAPI.run {
                 if (it.details.recurrence.contains(dataTime)) {
                     Some(
                         CombinableRecurrentTransaction(
-                            CombinableRecurrentTransactionQuantification(it.quantification.flow.toDailyFlow()),
+                            CombinableRecurrentTransactionQuantification(
+                                it.quantification.flow.toTimeFrequency(
+                                    timeFrequency
+                                )
+                            ),
                             CombinableRecurrentTransactionDetail(it, dataTime),
                             it.transactionCoordinates
                         )
