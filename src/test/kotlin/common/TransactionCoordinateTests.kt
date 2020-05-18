@@ -7,11 +7,10 @@ import graph.HierarchicalElementAPI
 import io.kotlintest.properties.Gen
 import io.kotlintest.properties.forAll
 import io.kotlintest.specs.StringSpec
+import java.util.UUID
 import ledger.Position
 import ledger.TransactionCoordinates
 import ledger.TransactionCoordinatesAPI
-import java.util.*
-
 
 class FundRefGen : Gen<FundRef> {
     override fun constants(): Iterable<FundRef> = emptyList()
@@ -36,8 +35,7 @@ class TransactionCoordinateTests : StringSpec({
             TestTransactionCoordinatesGen(),
             FundRefGen(),
             FundRefGen()
-        )
-        { transactionCoordinate: TestTransactionCoordinates, fund1: FundRef, fund2: FundRef ->
+        ) { transactionCoordinate: TestTransactionCoordinates, fund1: FundRef, fund2: FundRef ->
             TransactionCoordinatesAPI.run {
                 transactionCoordinate.position(
                     HierarchicalElementAPI.run {
@@ -51,8 +49,7 @@ class TransactionCoordinateTests : StringSpec({
     "POSITION: Should give the position of the given account as Source" {
         forAll(
             TestTransactionCoordinatesGen()
-        )
-        { transactionCoordinate: TestTransactionCoordinates ->
+        ) { transactionCoordinate: TestTransactionCoordinates ->
             TransactionCoordinatesAPI.run {
                 transactionCoordinate.position(
                     HierarchicalElementAPI.run {
@@ -68,8 +65,7 @@ class TransactionCoordinateTests : StringSpec({
     "POSITION: Should give the position of the given account as Destination" {
         forAll(
             TestTransactionCoordinatesGen()
-        )
-        { transactionCoordinate: TestTransactionCoordinates ->
+        ) { transactionCoordinate: TestTransactionCoordinates ->
             TransactionCoordinatesAPI.run {
                 transactionCoordinate.position(
                     HierarchicalElementAPI.run {
@@ -86,8 +82,7 @@ class TransactionCoordinateTests : StringSpec({
         forAll(
             TestTransactionCoordinatesGen(),
             FundRefGen()
-        )
-        { transactionCoordinate: TestTransactionCoordinates, fund: FundRef ->
+        ) { transactionCoordinate: TestTransactionCoordinates, fund: FundRef ->
             TransactionCoordinatesAPI.run {
                 transactionCoordinate.position(
                     HierarchicalElementAPI.run {
@@ -104,8 +99,7 @@ class TransactionCoordinateTests : StringSpec({
         forAll(
             TestTransactionCoordinatesGen(),
             FundRefGen()
-        )
-        { transactionCoordinate: TestTransactionCoordinates, fund: FundRef ->
+        ) { transactionCoordinate: TestTransactionCoordinates, fund: FundRef ->
             TransactionCoordinatesAPI.run {
                 transactionCoordinate.position(
                     HierarchicalElementAPI.run {
@@ -121,8 +115,7 @@ class TransactionCoordinateTests : StringSpec({
     "CONTAINS: Should return true since the given account is source" {
         forAll(
             TestTransactionCoordinatesGen()
-        )
-        { transactionCoordinate: TestTransactionCoordinates ->
+        ) { transactionCoordinate: TestTransactionCoordinates ->
             TransactionCoordinatesAPI.run {
                 transactionCoordinate.source in transactionCoordinate
             }
@@ -132,8 +125,7 @@ class TransactionCoordinateTests : StringSpec({
     "CONTAINS: Should return true since the given account is destination" {
         forAll(
             TestTransactionCoordinatesGen()
-        )
-        { transactionCoordinate: TestTransactionCoordinates ->
+        ) { transactionCoordinate: TestTransactionCoordinates ->
             TransactionCoordinatesAPI.run {
                 transactionCoordinate.destination in transactionCoordinate
             }
@@ -144,8 +136,7 @@ class TransactionCoordinateTests : StringSpec({
         forAll(
             TestTransactionCoordinatesGen(),
             FundRefGen()
-        )
-        { transactionCoordinate: TestTransactionCoordinates, fund: FundRef ->
+        ) { transactionCoordinate: TestTransactionCoordinates, fund: FundRef ->
             TransactionCoordinatesAPI.run {
                 fund !in transactionCoordinate
             }
@@ -155,8 +146,7 @@ class TransactionCoordinateTests : StringSpec({
     "TOLIST: Should return source and destination in a list" {
         forAll(
             TestTransactionCoordinatesGen()
-        )
-        { transactionCoordinate: TestTransactionCoordinates ->
+        ) { transactionCoordinate: TestTransactionCoordinates ->
             TransactionCoordinatesAPI.run {
                 transactionCoordinate.toList() == listOf(
                     transactionCoordinate.source,
@@ -169,11 +159,13 @@ class TransactionCoordinateTests : StringSpec({
     "UNARYMINUS: Should swap source and destination" {
         forAll(
             TestTransactionCoordinatesGen()
-        )
-        { transactionCoordinate: TestTransactionCoordinates ->
+        ) { transactionCoordinate: TestTransactionCoordinates ->
             TransactionCoordinatesAPI.run {
                 -transactionCoordinate ==
-                        TransactionCoordinates(transactionCoordinate.destination, transactionCoordinate.source)
+                    TransactionCoordinates(
+                        transactionCoordinate.destination,
+                        transactionCoordinate.source
+                    )
             }
         }
     }

@@ -53,7 +53,6 @@ object After : RelativePosition {
         DateTimeIntervalGen().random().filter { interval -> interval.to > from && interval.to > to && interval.from > from && interval.from > to }
 }
 
-
 class DateTimeIntervalRelativeGen(val dateTimeInterval: DateTimeInterval, val relativePosition: RelativePosition) :
     Gen<DateTimeInterval> {
     override fun constants(): Iterable<DateTimeInterval> = emptyList()
@@ -61,7 +60,6 @@ class DateTimeIntervalRelativeGen(val dateTimeInterval: DateTimeInterval, val re
         relativePosition.run { dateTimeInterval.generate() }.first()
     }
 }
-
 
 class DateTimeIntervalTests : StringSpec({
     val targetInterval = DateTimeIntervalGen().random().first()

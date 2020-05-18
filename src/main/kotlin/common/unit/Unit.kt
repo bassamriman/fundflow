@@ -13,7 +13,7 @@ interface UnitToUnitConverter<S : Unit, T : Unit> {
     fun Amount<S>.convert(): Amount<T> = Amount(this.value / rate, target)
 
     operator fun <OT : Unit> plus(other: UnitToUnitConverter<T, OT>): UnitToUnitConverterImpl<S, OT> {
-        return UnitToUnitConverterImpl(other.rate / rate, source, other.target)
+        return UnitToUnitConverterImpl(rate / other.rate, source, other.target)
     }
 
     fun inverse(): UnitToUnitConverter<T, S> = UnitToUnitConverterImpl(1.bd / rate, target, source)

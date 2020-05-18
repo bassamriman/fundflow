@@ -127,7 +127,7 @@ data class RecurrentTransactionLedgerContext(
             recurrentTransactions: Collection<RecurrentTransaction>
         ): RecurrentTransactionLedgerContext {
             val recurrentTransactionLedger =
-                RecurrentTransactionLedger(recurrentTransactions.toList())
+                RecurrentTransactionLedger(recurrentTransactions.map { it.reference to it }.toMap())
             val fundSummary =
                 LedgerApi.run {
                     recurrentTransactionLedger.ledgerOf(
@@ -146,7 +146,8 @@ data class RecurrentTransactionLedgerContext(
             return RecurrentTransactionLedgerContext(
                 funds.map { it.reference to it }.toMap(),
                 fundHierarchy,
-                RecurrentTransactionLedger(recurrentTransactions.toList()),
+                RecurrentTransactionLedger(recurrentTransactions.map { it.reference to it }
+                    .toMap()),
                 fundSummary
             )
         }

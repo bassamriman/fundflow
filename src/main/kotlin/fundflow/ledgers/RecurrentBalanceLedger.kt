@@ -3,6 +3,8 @@ package fundflow.ledgers
 import arrow.typeclasses.Monoid
 import fundflow.Fund
 import fundflow.FundRef
+import java.math.BigDecimal
+import java.time.LocalDateTime
 import ledger.CombinableSingleFundLedgerSummaryWithValue
 import ledger.CombinedTransactionDetailFactory
 import ledger.CombinedTransactionDetailFactoryMonoid
@@ -12,8 +14,6 @@ import ledger.Ledger
 import ledger.LedgerContext
 import ledger.LedgerFundSummaries
 import ledger.Transaction
-import java.math.BigDecimal
-import java.time.LocalDateTime
 
 typealias RecurrentBalanceTransaction = Transaction<BigDecimal, RecurrentBalanceTransactionDetail, FundRef>
 

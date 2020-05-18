@@ -8,11 +8,10 @@ import graph.HierarchicalElementAPI
 import io.kotlintest.properties.Gen
 import io.kotlintest.properties.forAll
 import io.kotlintest.specs.StringSpec
+import java.math.BigDecimal
 import ledger.Sign
 import ledger.Transaction
 import ledger.TransactionApi
-import java.math.BigDecimal
-
 
 typealias TestTransaction = Transaction<BigDecimal, BigDecimal, FundRef>
 
@@ -20,14 +19,12 @@ class BigDecimalGen : Gen<BigDecimal> {
     override fun constants(): Iterable<BigDecimal> = emptyList()
 
     override fun random(): Sequence<BigDecimal> = generateSequence { BigDecimal(Math.random()) }
-
 }
 
 class NegativeBigDecimalGen : Gen<BigDecimal> {
     override fun constants(): Iterable<BigDecimal> = emptyList()
 
     override fun random(): Sequence<BigDecimal> = generateSequence { BigDecimal(-Math.random()) }
-
 }
 
 class PositiveTestTransactionGen : Gen<TestTransaction> {
@@ -185,7 +182,6 @@ class TransactionTests : StringSpec({
         }
     }
 
-
     "Sign : Should give nothing since input fund is not part of transaction" {
         forAll(PositiveTestTransactionGen(), FundRefGen()) { transaction, fund ->
             TransactionApi.run {
@@ -199,6 +195,4 @@ class TransactionTests : StringSpec({
             }
         }
     }
-
-
 })
