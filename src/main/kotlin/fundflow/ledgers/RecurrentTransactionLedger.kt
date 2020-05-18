@@ -11,6 +11,7 @@ import common.ValueWithError
 import common.ValueWithError.Companion.ve
 import common.ValueWithError.Companion.withErrors
 import common.unit.AmountOps
+import common.unit.TimeFrequency
 import common.unit.TimeFrequencyOps
 import fundflow.Flow
 import fundflow.Fund
@@ -61,13 +62,13 @@ data class RecurrentTransactionFundView(
 
 object RecurrentTransactionLedgerAPI {
 
-    fun RecurrentTransactionLedger.flowAt(dataTime: LocalDateTime): CombinableRecurrentTransactionLedger =
+    fun RecurrentTransactionLedger.flowAt(dataTime: LocalDateTime, timeFrequency: TimeFrequency): CombinableRecurrentTransactionLedger =
         this.let {
             LedgerApi.run {
                 it.mapList {
                     it.map {
                         CombinableRecurrentTransactionLedgerAPI.run {
-                            it.flowAt(dataTime)
+                            it.flowAt(dataTime, timeFrequency)
                         }
                     }.flatten()
                 }
@@ -314,10 +315,10 @@ object RecurrentTransactionLedgerContextAPI {
         )
     }
 
-    fun RecurrentTransactionLedgerContext.flowAt(dateTime: LocalDateTime): CombinableRecurrentTransactionLedgerContext {
+    fun RecurrentTransactionLedgerContext.flowAt(dateTime: LocalDateTime, timeFrequency: TimeFrequency): CombinableRecurrentTransactionLedgerContext {
         val combinableRecurrentTransactionLedger: CombinableRecurrentTransactionLedger =
             RecurrentTransactionLedgerAPI.run {
-                recurrentTransactionLedger.flowAt(dateTime)
+                recurrentTransactionLedger.flowAt(dateTime, timeFrequency)
             }
 
         val fundSummaries =

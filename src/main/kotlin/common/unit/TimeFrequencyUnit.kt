@@ -55,6 +55,7 @@ object TimeFrequencyOps {
         when (this) {
             is Daily -> UnitToUnitConverter(1.bd, this, Daily)
             is Weekly -> UnitToUnitConverter(7.bd, this, Daily)
+            is BiWeekly -> UnitToUnitConverter(14.bd, this, Daily)
             is SemiMonthly -> UnitToUnitConverter(30.4375.bd.divide(2.bd), this, Daily)
             is Monthly -> UnitToUnitConverter(30.4375.bd, this, Daily)
             is BiMonthly -> UnitToUnitConverter(30.4375.bd.multiply(2.bd), this, Daily)
