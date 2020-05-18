@@ -5,7 +5,7 @@ import arrow.typeclasses.Monoid
 import common.Identifiable
 import graph.HierarchicalElement
 import graph.HierarchicalElementAPI
-import java.util.*
+import java.util.UUID
 
 enum class Sign {
     POSITIVE, NEGATIVE

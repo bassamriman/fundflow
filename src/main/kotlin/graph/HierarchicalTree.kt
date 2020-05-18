@@ -8,12 +8,16 @@ import arrow.mtl.Reader
 import arrow.mtl.map
 import arrow.mtl.reader
 import arrow.mtl.runId
-import common.*
+import common.ChildCannotAlsoBeAnAncestorOfSameElementError
+import common.ChildCannotBeParentOfItselfError
+import common.Error
+import common.ParentCannotAlsoBeADescendantOfSameElementError
+import common.ValueWithError
 import common.ValueWithError.Companion.ve
 import common.ValueWithError.Companion.withError
 import common.ValueWithError.Companion.withErrors
 
-data class HierarchicalElement<out F>(val relations: AncestorAndDescendantAdjacentListTree<F>) {}
+data class HierarchicalElement<out F>(val relations: AncestorAndDescendantAdjacentListTree<F>)
 
 object HierarchicalElementAPI {
 
@@ -160,7 +164,13 @@ object HierarchicalTreeApi {
     infix fun <F> F.parentOf(child: F): Reader<HierarchicalTree<F>, Boolean> =
         this.check(
             child,
-            { hierarchicalElement, element -> HierarchicalElementAPI.run { hierarchicalElement.isParentOf(element) } })
+            { hierarchicalElement, element ->
+                HierarchicalElementAPI.run {
+                    hierarchicalElement.isParentOf(
+                        element
+                    )
+                }
+            })
 
     infix fun <F> F.ancestorOf(parent: F): Reader<HierarchicalTree<F>, Boolean> =
         this.check(
@@ -174,12 +184,11 @@ object HierarchicalTreeApi {
     private fun <F> F.check(
         element: F,
         predicate: (HierarchicalElement<F>, F) -> Boolean
-    ): Reader<HierarchicalTree<F>, Boolean> =
-        { hierarchicalTree: HierarchicalTree<F> ->
-            this.toHierarchicalElement(hierarchicalTree).map {
-                predicate(it, element)
-            }.getOrElse { false }
-        }.reader()
+    ): Reader<HierarchicalTree<F>, Boolean> = { hierarchicalTree: HierarchicalTree<F> ->
+        this.toHierarchicalElement(hierarchicalTree).map {
+            predicate(it, element)
+        }.getOrElse { false }
+    }.reader()
 
     fun <F> F.ancestors(): Reader<HierarchicalTree<F>, Set<F>> =
         this.mapHierarchicalElement { hierarchicalElement ->
@@ -193,12 +202,11 @@ object HierarchicalTreeApi {
 
     private fun <F> F.mapHierarchicalElement(
         map: (HierarchicalElement<F>) -> Set<F>
-    ): Reader<HierarchicalTree<F>, Set<F>> =
-        { hierarchicalTree: HierarchicalTree<F> ->
-            this.toHierarchicalElement(hierarchicalTree).map {
-                map(it)
-            }.getOrElse { emptySet() }
-        }.reader()
+    ): Reader<HierarchicalTree<F>, Set<F>> = { hierarchicalTree: HierarchicalTree<F> ->
+        this.toHierarchicalElement(hierarchicalTree).map {
+            map(it)
+        }.getOrElse { emptySet() }
+    }.reader()
 
     operator fun <F> HierarchicalTree<F>.plus(
         relation: ParentChild<F>
@@ -211,10 +219,14 @@ object HierarchicalTreeApi {
         relations.fold(
             this.ve(),
             { previous, newRelation ->
-                previous.v.addParentChildRelation(newRelation.parent, newRelation.child).withErrors(previous.e)
+                previous.v.addParentChildRelation(newRelation.parent, newRelation.child)
+                    .withErrors(previous.e)
             })
 
-    fun <F> HierarchicalTree<F>.addParentChildRelation(parent: F, child: F): ValueWithError<HierarchicalTree<F>> =
+    fun <F> HierarchicalTree<F>.addParentChildRelation(
+        parent: F,
+        child: F
+    ): ValueWithError<HierarchicalTree<F>> =
         if (parent == child) {
             this.ve().withError(ChildCannotBeParentOfItselfError(child))
         } else {
@@ -232,9 +244,9 @@ object HierarchicalTreeApi {
             else this.unsafeAdd(parent, child).ve()
         }
 
-
     private fun <F> HierarchicalTree<F>.unsafeAdd(
-        parent: F, child: F
+        parent: F,
+        child: F
     ): HierarchicalTree<F> {
 
         val ancestorsOfParent: Set<F> = parent.ancestors().runId(this)
@@ -302,10 +314,11 @@ object HierarchicalTreeApi {
         val descendant: Set<F> = element.descendants().runId(this)
 
         return HierarchicalTree(elementToHierarchicalElement +
-                HierarchicalElementAPI.run {
-                    elementToHierarchicalElement
-                        .filterKeys { (ancestors + descendant).contains(it) }.mapValues { it.value - element }
-                } - element)
+            HierarchicalElementAPI.run {
+                elementToHierarchicalElement
+                    .filterKeys { (ancestors + descendant).contains(it) }
+                    .mapValues { it.value - element }
+            } - element)
     }
 
     tailrec operator fun <F> HierarchicalTree<F>.minus(elements: Collection<F>): HierarchicalTree<F> =

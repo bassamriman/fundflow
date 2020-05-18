@@ -9,8 +9,23 @@ import common.ValueWithError.Companion.ve
 import common.bd
 import java.time.LocalDateTime
 
+sealed class TimeFrequency(val name: String, val perAlias: String) : Unit {
+    companion object {
+        val all: List<TimeFrequency> =
+            listOf(Daily, Weekly, BiWeekly, SemiMonthly, Monthly, BiMonthly, Annually)
 
-sealed class TimeFrequency : Unit
+        fun byName(name: String): Option<TimeFrequency> = all.find { it.name == name }.toOption()
+    }
+}
+
+object Daily : TimeFrequency("Daily", "/ Day")
+object Weekly : TimeFrequency("Weekly", "/ Week")
+object BiWeekly : TimeFrequency("BiWeekly", "/ Two Weeks")
+object SemiMonthly : TimeFrequency("SemiMonthly", "/ Half Month")
+object Monthly : TimeFrequency("Monthly", "/ Month")
+object BiMonthly : TimeFrequency("BiMonthly", "/ Two Month")
+object Annually : TimeFrequency("Annually", "/ Year")
+
 data class DateTimeIncrementer(val increment: (s: LocalDateTime) -> LocalDateTime) {
     private fun LocalDateTime.increment(): LocalDateTime = increment(this)
 
@@ -33,16 +48,7 @@ data class DateTimeIncrementer(val increment: (s: LocalDateTime) -> LocalDateTim
         else {
             this.increment().incrementUntil(to, accumulatedIncrements + this)
         }
-
 }
-
-object Daily : TimeFrequency()
-object Weekly : TimeFrequency()
-object BiWeekly : TimeFrequency()
-object SemiMonthly : TimeFrequency()
-object Monthly : TimeFrequency()
-object BiMonthly : TimeFrequency()
-object Annually : TimeFrequency()
 
 object TimeFrequencyOps {
     fun <U : TimeFrequency> U.toDailyConverter(): UnitToUnitConverterImpl<U, Daily> =
@@ -67,7 +73,6 @@ object TimeFrequencyOps {
             is Annually -> DateTimeIncrementer { it.plusYears(1) }
         }
 
-
     fun <FU : TimeFrequency, TU : TimeFrequency> convert(
         amount: Amount<FU>,
         targetFrequency: TU
@@ -78,5 +83,4 @@ object TimeFrequencyOps {
 
     infix fun <FU : TimeFrequency, TU : TimeFrequency> Amount<FU>.convertTo(targetFrequency: TU) =
         convert(this, targetFrequency)
-
 }

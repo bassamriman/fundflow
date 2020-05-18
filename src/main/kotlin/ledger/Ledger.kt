@@ -34,15 +34,14 @@ object LedgerApi {
         this.ledgerOf(fund) { f, flowCoordinates ->
             TransactionCoordinatesAPI.run {
                 HierarchicalTreeApi.run {
-                    flowCoordinates.source.isDescendantOrEqual(f).runId(hierarchicalTree)
-                            || flowCoordinates.destination.isDescendantOrEqual(f).runId(hierarchicalTree)
+                    flowCoordinates.source.isDescendantOrEqual(f).runId(hierarchicalTree) ||
+                            flowCoordinates.destination.isDescendantOrEqual(f).runId(hierarchicalTree)
                 }
             }
         }
 
     fun <Q, D, F> Ledger<Q, D, F>.ledgerOf(fund: F): Option<SingleFundLedger<Q, D, F>> =
         this.ledgerOf(fund) { f, flowCoordinates -> TransactionCoordinatesAPI.run { f in flowCoordinates } }
-
 
     fun <Q, D, F> Ledger<Q, D, F>.ledgerOf(
         fund: F,
@@ -93,14 +92,12 @@ object LedgerApi {
     operator fun <Q, D, F> Ledger<Q, D, F>.minus(transaction: Transaction<Q, D, F>): Ledger<Q, D, F> =
         this.remove(transaction)
 
-
     fun <Q, D, F> Ledger<Q, D, F>.removeFunds(funds: Collection<F>): Ledger<Q, D, F> =
         this.copy(this.transactions - transactions.filter {
             TransactionCoordinatesAPI.run {
                 it.transactionCoordinates.toList().intersect(funds).isNotEmpty()
             }
         })
-
 
     fun <Q, D, F> Ledger<Q, D, F>.remove(transaction: F): Ledger<Q, D, F> =
         this.removeFunds(listOf(transaction))
@@ -110,7 +107,6 @@ object LedgerApi {
 
     fun <Q, D, F, Q1, D1, F1> Ledger<Q, D, F>.flatMap(f: (Transaction<Q, D, F>) -> List<Transaction<Q1, D1, F1>>): Ledger<Q1, D1, F1> =
         this.mapList { transactions -> transactions.flatMap { f(it) } }
-
 }
 
 data class SingleFundLedger<Q, D, F>(val fund: F, val ledger: Ledger<Q, D, F>)
@@ -123,8 +119,8 @@ data class SingleFundLedgerSummary<Q, D, F>(
 
 data class CombinableSingleFundLedgerSummaryWithValue<Q, D, F, CD>(
     val fundFlow: Q,
-    val incomingFlow : Q,
-    val outgoingFlow : Q,
+    val incomingFlow: Q,
+    val outgoingFlow: Q,
     val incomingTransaction: Collection<Transaction<Q, CD, F>>,
     val outgoingTransaction: Collection<Transaction<Q, CD, F>>,
     val singleFundLedger: SingleFundLedger<Q, D, F>
@@ -222,7 +218,7 @@ object SingleFundLedgerAPI {
 
     fun <Q, D, F> SingleFundLedger<Q, D, F>.outgoingFlow(
         quantificationOps: CombinableQuantificationOps<Q>
-    ): Q = quantificationOps.combineAll(this.outgoingTransactions(quantificationOps).map{it.quantification})
+    ): Q = quantificationOps.combineAll(this.outgoingTransactions(quantificationOps).map { it.quantification })
 
     fun <Q, D, F, CD> SingleFundLedger<Q, D, F>.outgoingTransactions(
         quantificationOps: CombinableQuantificationOps<Q>,
@@ -236,7 +232,7 @@ object SingleFundLedgerAPI {
 
     fun <Q, D, F> SingleFundLedger<Q, D, F>.incomingFlow(
         quantificationOps: CombinableQuantificationOps<Q>
-    ): Q = quantificationOps.combineAll(this.incomingTransactions(quantificationOps).map{it.quantification})
+    ): Q = quantificationOps.combineAll(this.incomingTransactions(quantificationOps).map { it.quantification })
 
     fun <Q, D, F, CD> SingleFundLedger<Q, D, F>.incomingTransactions(
         quantificationOps: CombinableQuantificationOps<Q>,
@@ -292,7 +288,6 @@ object SingleFundLedgerAPI {
             quantificationOps,
             detailFactoryMonoid
         )
-
 
     fun <Q, D, F, CD> SingleFundLedger<Q, D, F>.incomingTransactions(
         quantificationOps: CombinableQuantificationOps<Q>,

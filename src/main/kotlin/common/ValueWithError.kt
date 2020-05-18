@@ -1,8 +1,5 @@
 package common
 
-import arrow.core.Option
-
-
 interface Error {
     val message: String
 }
@@ -34,7 +31,6 @@ interface ValueWithError<V> {
 
         fun <V> ValueWithError<V>.withErrors(errors: Collection<Error>): ValueWithError<V> =
             ValueWithErrorImpl(this.v, this.e + errors)
-
     }
 }
 

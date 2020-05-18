@@ -3,16 +3,29 @@ package fundflow.ledgers
 import arrow.typeclasses.Monoid
 import fundflow.Fund
 import fundflow.FundRef
-import ledger.*
+import ledger.CombinableSingleFundLedgerSummaryWithValue
+import ledger.CombinedTransactionDetailFactory
+import ledger.CombinedTransactionDetailFactoryMonoid
+import ledger.FundView
+import ledger.FundViewFactory
+import ledger.Ledger
+import ledger.LedgerContext
+import ledger.LedgerFundSummaries
+import ledger.Transaction
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
 typealias RecurrentBalanceTransaction = Transaction<BigDecimal, RecurrentBalanceTransactionDetail, FundRef>
 
-data class RecurrentBalanceTransactionDetail(val timestamp: LocalDateTime, val generatedFrom: RecurrentTransaction)
+data class RecurrentBalanceTransactionDetail(
+    val timestamp: LocalDateTime,
+    val generatedFrom: RecurrentTransaction
+)
 typealias CombinedRecurrentBalanceTransactionDetail = CombinedTransactionDetail<RecurrentBalanceTransaction>
 
-object CombinedRecurrentBalanceTransactionDetailMonoid : CombinedTransactionDetailMonoid<RecurrentBalanceTransaction>()
+object CombinedRecurrentBalanceTransactionDetailMonoid :
+    CombinedTransactionDetailMonoid<RecurrentBalanceTransaction>()
+
 object CombinedRecurrentBalanceTransactionDetailFactory :
     CombinedTransactionDetailFactory<BigDecimal, RecurrentBalanceTransactionDetail, FundRef, CombinedRecurrentBalanceTransactionDetail> {
     override fun build(combinedTransactions: Collection<Transaction<BigDecimal, RecurrentBalanceTransactionDetail, FundRef>>): CombinedRecurrentBalanceTransactionDetail =
@@ -35,6 +48,6 @@ object RecurrentBalanceTransactionFundViewFactory :
     override fun build(
         fund: Fund,
         fundSummaries: LedgerFundSummaries<BigDecimal, RecurrentBalanceTransactionDetail, FundRef, CombinedRecurrentBalanceTransactionDetail, RecurrentBalanceTransactionLedgerFundSummary>
-    ): RecurrentBalanceTransactionFundView = RecurrentBalanceTransactionFundView(fund, fundSummaries)
-
+    ): RecurrentBalanceTransactionFundView =
+        RecurrentBalanceTransactionFundView(fund, fundSummaries)
 }

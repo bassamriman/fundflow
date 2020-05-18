@@ -38,9 +38,9 @@ object LedgerContextAPI {
             LS : LedgerFundSummaries<Q, D, F, CD, S>,
             FV : FundView<Q, D, F, CD, S>>
             LedgerContext<Q, D, F, CD, L, S, LS>.view(
-        fundRef: FundRef,
-        fundView: FundViewFactory<Q, D, F, CD, S, FV>
-    ): Option<FV> =
+                fundRef: FundRef,
+                fundView: FundViewFactory<Q, D, F, CD, S, FV>
+            ): Option<FV> =
         this.funds.k().getOption(fundRef).flatMap { fund ->
             this.fundSummaries.getOption(fundRef).map { fundView.build(fund, it) }
         }

@@ -17,7 +17,6 @@ object DailyFlowOps {
     )
 }
 
-
 object FlowOps {
     fun Flow.toDailyFlow(): DailyFlow =
         this.let {
