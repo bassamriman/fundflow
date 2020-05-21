@@ -11,10 +11,10 @@ import java.time.LocalDateTime
 
 sealed class TimeFrequency(val name: String, val perAlias: String) : Unit {
     companion object {
-        val all: List<TimeFrequency> =
+        fun all(): List<TimeFrequency> =
             listOf(Daily, Weekly, BiWeekly, SemiMonthly, Monthly, BiMonthly, Annually)
 
-        fun byName(name: String): Option<TimeFrequency> = all.find { it.name == name }.toOption()
+        fun byName(name: String): Option<TimeFrequency> = all().find { it.name == name }.toOption()
     }
 }
 
